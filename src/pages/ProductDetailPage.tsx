@@ -23,76 +23,72 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [colorImageMap, setColorImageMap] = useState<{ [color: string]: string }>({});
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore();
+function deepParseJSON(str: any) {
+  let parsed = str;
+  try {
+    while (typeof parsed === "string") {
+      parsed = JSON.parse(parsed);
+    }
+  } catch {
+    // return last parsed if parsing fails
+  }
+  return parsed;
+}
 
-  const parseStringArray = (data: string | string[]) => {
-    if (Array.isArray(data)) return data;
-    if (typeof data !== 'string') return [];
+function parseStringArray(arr: any): string[] {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item) => {
+    const parsed = deepParseJSON(item);
+    // flatten if the parsed result is an array
+    if (Array.isArray(parsed)) return parsed;
+    return parsed;
+  }).flat(Infinity);
+}
 
+
+ useEffect(() => {
+  const fetchProduct = async () => {
     try {
-      let parsed = JSON.parse(data);
-      while (typeof parsed === 'string') {
-        parsed = JSON.parse(parsed);
-      }
-      
-      // Handle case where it might be an array of arrays
-      if (Array.isArray(parsed) && parsed.length === 1 && Array.isArray(parsed[0])) {
-        parsed = parsed[0];
-      }
+      const res = await axios.get<Product>(`http://127.0.0.1:8000/api/v1/product/product/${id}`);
+      const productData = res.data;
 
-      return parsed.map((item: string) => 
-        item.replace(/^"+|"+$/g, '').replace(/\\"/g, '')
-      ).filter((item: string) => item);
-    } catch (error) {
-      console.error("Error parsing array:", error);
-      return [];
-    }
-  };
+      productData.colors = parseStringArray(productData.colors);
+      productData.sizes = parseStringArray(productData.sizes);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await axios.get<Product>(`http://127.0.0.1:8000/api/v1/product/get/${id}`);
-        const productData = res.data;
-
-        // Parse sizes and colors
-        productData.sizes = parseStringArray(productData.sizes);
-        productData.colors = parseStringArray(productData.colors);
-
-        // Parse images_by_color
-        if (productData.images_by_color) {
-          try {
-            let parsed = productData.images_by_color;
-            while (typeof parsed === 'string') {
-              parsed = JSON.parse(parsed);
-            }
-            setColorImageMap(parsed);
-          } catch (error) {
-            console.error("Failed to parse images_by_color", error);
-          }
+      if (productData.images_by_color) {
+        try {
+          const parsed = deepParseJSON(productData.images_by_color);
+          setColorImageMap(parsed);
+        } catch (error) {
+          console.error("Failed to parse images_by_color", error);
         }
-
-        setProduct(productData);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-        setProduct(null);
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchProduct();
-  }, [id]);
-
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    if (!product) return;
-    const image = colorImageMap[color];
-    if (image) {
-      const index = product.images.findIndex((img) => img === image);
-      if (index !== -1) {
-        setSelectedImage(index);
-      }
+      setProduct(productData);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      setProduct(null);
+    } finally {
+      setLoading(false);
     }
   };
+  fetchProduct();
+}, [id]);
+
+
+ const handleColorSelect = (color: string) => {
+  setSelectedColor(color);
+  console.log("Selected color:", color); // Add this
+  // update image preview if available
+  if (!product) return;
+  const image = colorImageMap[color];
+  if (image) {
+    const index = product.images.findIndex((img) => img === image);
+    if (index !== -1) {
+      setSelectedImage(index);
+    }
+  }
+};
+
 
   const handleAddToCart = () => {
     if (!product) return;
