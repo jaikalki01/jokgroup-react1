@@ -12,18 +12,14 @@ const CategorySection = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/v1/cat/list');
-        console.log('API Response:', response.data); // Log full response to debug
-
-        // Directly set the categories array
         if (Array.isArray(response.data)) {
-          setCategories(response.data); // Since it's an array
+          setCategories(response.data);
         } else {
-          setCategories([]); // Set empty array if no categories are found
+          setCategories([]);
           setError('Categories data is not available');
         }
       } catch (err) {
-        console.error('Error fetching categories:', err);
-        setCategories([]); // Set empty array if API call fails
+        setCategories([]);
         setError('Failed to fetch categories');
       } finally {
         setLoading(false);
@@ -53,10 +49,22 @@ const CategorySection = () => {
               to={`/category/${category.slug}`}
               className="group relative h-64 overflow-hidden rounded-lg shadow-md transition-transform hover:-translate-y-1"
             >
+              {/* Category Image */}
+              <img
+                src={
+                  category.image?.startsWith('http')
+                    ? category.image
+                    : category.image
+                    ? category.image.startsWith('/static/')
+                      ? `http://localhost:8000${category.image}`
+                      : `http://localhost:8000/static/products/${category.image.replace(/^\/+/, '')}`
+                    : '/placeholder.svg'
+                }
+                alt={category.name}
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => (e.currentTarget.src = 'cloth-bg.jpg')}
+              />
               <div className="absolute inset-0 bg-navy opacity-40 group-hover:opacity-30 transition-opacity" />
-              
-              <div className="absolute inset-0 bg-[url('/placeholder.svg')] bg-cover bg-center" />
-              
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-white/80 backdrop-blur-sm px-6 py-3 rounded text-center">
                   <h3 className="text-xl font-semibold text-navy">{category.name}</h3>

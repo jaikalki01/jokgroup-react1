@@ -213,7 +213,9 @@ const calculateTotal = (subtotal: number, shipping: number, discount: number, di
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
+                    <th className="text-left py-4">ID</th> {/* New ID column */}
                     <th className="text-left py-4">Product</th>
+                    <th className="text-left py-4">Product Details</th> {/* New Product Details column */}
                     <th className="text-center py-4">Quantity</th>
                     <th className="text-right py-4">Price</th>
                     <th className="text-right py-4">Total</th>
@@ -226,52 +228,47 @@ const calculateTotal = (subtotal: number, shipping: number, discount: number, di
                     const price = product.discountPrice || product.price;
                     const itemTotal = price * item.quantity;
 
+                    let imagesArray: string[] = [];
+                    try {
+                      imagesArray =
+                        typeof product.images === "string"
+                          ? JSON.parse(product.images)
+                          : product.images;
+                    } catch (e) {
+                      console.error("Error parsing product images:", e);
+                    }
+                    const firstImage = imagesArray[0]
+                      ? `http://localhost:8000/${imagesArray[0].replace(/^\/+/, "")}`
+                      : "/placeholder.svg";
+
                     return (
                       <tr key={item.id} className="border-b">
+                        <td className="py-4">{product.id}</td> {/* Show product ID */}
                         <td className="py-4">
-                          <div className="flex items-center">
-                       <Link to={`/product/${product.id}`}>
-  {(() => {
-    let imagesArray: string[] = [];
-
-    try {
-      imagesArray =
-        typeof product.images === "string"
-          ? JSON.parse(product.images)
-          : product.images;
-    } catch (e) {
-      console.error("Error parsing product images:", e);
-    }
-
-    const firstImage = imagesArray[0]
-      ? `http://localhost:8000/${imagesArray[0].replace(/^\/+/, "")}`
-      : "/placeholder.svg";
-
-    return (
-      <img
-        src={firstImage}
-        alt={product.name}
-        className="w-16 h-16 object-cover rounded mr-4"
-      />
-    );
-  })()}
-</Link>
-
-                            <div>
-                              <Link 
-                                to={`/product/${product.id}`}
-                                className="font-medium hover:text-navy hover:underline"
-                              >
-                                {product.name}
-                              </Link>
-                              <div className="text-sm text-gray-500 mt-1">
-                                <span 
-                                  className="inline-block w-3 h-3 rounded-full mr-1" 
-                                  style={{ backgroundColor: item.color === 'light-blue' ? 'lightblue' : item.color }}
-                                ></span>
-                                {item.color}, {item.size}
-                              </div>
-                            </div>
+                          <Link to={`/product/${product.id}`}>
+                            <img
+                              src={firstImage}
+                              alt={product.name}
+                              className="w-16 h-16 object-cover rounded mr-4"
+                            />
+                          </Link>
+                        </td>
+                        <td className="py-4">
+                          <Link
+                            to={`/product/${product.id}`}
+                            className="font-medium hover:text-navy hover:underline"
+                          >
+                            {product.name}
+                          </Link>
+                          <div className="text-sm text-gray-500 mt-1">
+                            <span
+                              className="inline-block w-3 h-3 rounded-full mr-1"
+                              style={{
+                                backgroundColor:
+                                  item.color === "light-blue" ? "lightblue" : item.color,
+                              }}
+                            ></span>
+                            {item.color}, {item.size}
                           </div>
                         </td>
                         <td className="py-4">
