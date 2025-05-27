@@ -1,8 +1,7 @@
-
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
-import { categories } from '@/data/mockData';
+// import { categories } from '@/data/mockData'; // <-- REMOVE this line
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,16 +27,36 @@ import {
 const NavBar = () => {
   const { state, dispatch, logout } = useStore();
   const { cart, isLoggedIn, currentUser } = state;
+  const [categories, setCategories] = useState<any[]>([]); // <-- move categories to state
   const [searchValue, setSearchValue] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/v1/cat/list');
+        const data = await res.json();
+        console.log('Fetched categories:', data);
+        setCategories(data); // <-- Use data directly, NOT data.data
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch({ type: 'SET_SEARCH_QUERY', payload: searchValue });
-    setIsSearchOpen(false);
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (searchValue.trim()) {
+      dispatch({ type: 'SET_SEARCH_QUERY', payload: searchValue });
+      setIsSearchOpen(false);
+      navigate(`/products?search=${encodeURIComponent(searchValue)}`);
+    }
   };
 
   return (
@@ -90,7 +109,13 @@ const NavBar = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            onClick={() => {
+              if (!isSearchOpen) {
+                setIsSearchOpen(true);
+              } else {
+                handleSearch();
+              }
+            }}
           >
             <Search className="h-5 w-5" />
           </Button>
