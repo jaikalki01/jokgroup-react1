@@ -20,16 +20,19 @@ const FeaturedProducts = () => {
       }
     };
     
-    // Fetch new arrival products
-    const fetchNewArrivals = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/v1/product/list?newArrival=true');
-        const data = await response.json();
-        setNewArrivals(data);
-      } catch (error) {
-        console.error('Error fetching new arrival products:', error);
-      }
-    };
+const fetchNewArrivals = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/v1/product/new-arrivals');
+    const data = await response.json();
+    console.log('New Arrivals data:', data);
+    setNewArrivals(data);
+  } catch (error) {
+    console.error('Error fetching new arrival products:', error);
+  }
+};
+
+
+
 
     // Fetch best seller products
     const fetchBestSellers = async () => {

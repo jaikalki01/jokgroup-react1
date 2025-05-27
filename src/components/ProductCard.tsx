@@ -27,9 +27,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return `₹${price.toLocaleString('en-IN')}`;
-  };
+ function formatPrice(price?: number | null) {
+  if (price == null || isNaN(price)) {
+    return "N/A"; // or fallback value like "0"
+  }
+  return price.toLocaleString(undefined, { style: "currency", currency: "INR" });
+}
 
   // Safely parse images array from JSON string or use if already array
   let imagesArray: string[] = [];

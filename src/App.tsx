@@ -23,6 +23,8 @@ import NotFound from "@/pages/NotFound";
 import ProfilePage from "@/pages/user/ProfilePage";
 import OrdersPage from "@/pages/user/OrdersPage";
 import AccountSettingsPage from "@/pages/user/AccountSettingsPage";
+import Newarrival from "@/components/user/Newarrival";
+
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -174,6 +176,18 @@ const App = () => (
                 </>
               }
             />
+            <Route
+  path="/new-arrivals"
+  element={
+    <>
+      <NavBar />
+      <main>
+        <Newarrival />
+      </main>
+      <Footer />
+    </>
+  }
+/>
             <Route
               path="/register"
               element={
