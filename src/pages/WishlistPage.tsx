@@ -80,7 +80,9 @@ const WishlistPage = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b">
+                <th className="text-left py-4">ID</th>
                 <th className="text-left py-4">Product</th>
+                <th className="text-left py-4">Name</th> {/* Added Name column */}
                 <th className="text-right py-4">Price</th>
                 <th className="text-center py-4">Stock Status</th>
                 <th className="text-right py-4">Actions</th>
@@ -106,6 +108,7 @@ const WishlistPage = () => {
 
                 return (
                   <tr key={product.id} className="border-b">
+                    <td className="py-4">{product.id}</td>
                     <td className="py-4">
                       <div className="flex items-center">
                         <Link to={`/product/${product.id}`}>
@@ -115,17 +118,17 @@ const WishlistPage = () => {
                             className="w-16 h-16 object-cover rounded mr-4"
                           />
                         </Link>
-                        <div>
-                          <Link
-                            to={`/product/${product.id}`}
-                            className="font-medium hover:text-navy hover:underline"
-                          >
-                            {product.name}
-                          </Link>
-                          <div className="text-sm text-gray-500 mt-1">
-                            {product.category}
-                          </div>
-                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4">
+                      <Link
+                        to={`/product/${product.id}`}
+                        className="font-medium hover:text-navy hover:underline"
+                      >
+                        {product.name}
+                      </Link>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {product.category}
                       </div>
                     </td>
                     <td className="py-4 text-right">
@@ -148,6 +151,13 @@ const WishlistPage = () => {
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveFromWishlist(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
                           variant="default"
                           size="sm"
                           disabled={!product.in_stock}
@@ -155,13 +165,6 @@ const WishlistPage = () => {
                         >
                           <ShoppingCart className="h-4 w-4 mr-2" />
                           Add to Cart
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveFromWishlist(product.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>

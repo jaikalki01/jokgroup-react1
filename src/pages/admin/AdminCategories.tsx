@@ -179,9 +179,10 @@ const AdminCategories = () => {
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
+            <TableHead>Image</TableHead> {/* New Image column */}
             <TableHead>Name</TableHead>
             <TableHead>Slug</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -189,17 +190,17 @@ const AdminCategories = () => {
             <React.Fragment key={cat.id}>
               <TableRow>
                 <TableCell>{cat.id}</TableCell>
-                <TableCell className="flex items-center gap-3">
-<img src={`http://localhost:8000/static/${cat.image}`} alt={cat.name} />
-
-
-
-
-
-                </TableCell>
-                <TableCell>{cat.slug}</TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
+                  <img
+                    src={`http://localhost:8000/static/${cat.image}`}
+                    alt={cat.name}
+                    className="w-10 h-10 object-cover rounded"
+                  />
+                </TableCell>
+                <TableCell>{cat.name}</TableCell>
+                <TableCell>{cat.slug}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex gap-2 justify-end">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -248,14 +249,14 @@ const AdminCategories = () => {
               {expandedCategoryId === cat.id && cat.subcategories?.length > 0 && (
                 <>
                   <TableRow>
-                    <TableCell colSpan={4} className="p-0">
+                    <TableCell colSpan={5} className="p-0">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>ID</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Slug</TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -264,8 +265,8 @@ const AdminCategories = () => {
                               <TableCell>{sub.id}</TableCell>
                               <TableCell>{sub.name}</TableCell>
                               <TableCell>{sub.slug}</TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
+                              <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
                                   <Button
                                     variant="ghost"
                                     size="icon"

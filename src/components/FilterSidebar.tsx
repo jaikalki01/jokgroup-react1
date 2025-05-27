@@ -28,8 +28,8 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
     const fetchData = async () => {
       try {
         const [catRes, subRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/v1/cat/list'),
-          axios.get('http://127.0.0.1:8000/api/v1/cat/subcategory/list'),
+          axios.get<any[]>('http://127.0.0.1:8000/api/v1/cat/list'),
+          axios.get<any[]>('http://127.0.0.1:8000/api/v1/cat/subcategory/list'),
         ]);
         setCategories(catRes.data);
         setSubcategories(subRes.data);
@@ -83,7 +83,13 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
       const res = await axios.get('http://127.0.0.1:8000/api/v1/product/list', {
         params: query,
       });
-      dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: res.data });
+      // Ensure products is always an array
+      const products = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray((res.data as { products?: any[] }).products)
+          ? (res.data as { products: any[] }).products
+          : [];
+      dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: products });
       dispatch({
         type: 'SET_FILTERS',
         payload: { ...localFilters, priceRange },

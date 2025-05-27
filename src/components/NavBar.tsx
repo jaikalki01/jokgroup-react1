@@ -26,7 +26,7 @@ import {
 
 const NavBar = () => {
   const { state, dispatch, logout } = useStore();
-  const { cart, isLoggedIn, currentUser } = state;
+  const { cart, isLoggedIn, currentUser, wishlist = [] } = state;
   const [categories, setCategories] = useState<any[]>([]); // <-- move categories to state
   const [searchValue, setSearchValue] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -49,6 +49,7 @@ const NavBar = () => {
   }, []);
 
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+  const totalWishlist = wishlist.length;
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -172,8 +173,13 @@ const NavBar = () => {
           )}
 
           <Link to="/wishlist">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="relative">
               <Heart className="h-5 w-5" />
+              {totalWishlist > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs">
+                  {totalWishlist}
+                </span>
+              )}
             </Button>
           </Link>
 
@@ -281,10 +287,15 @@ const NavBar = () => {
 
               <Link
                 to="/wishlist"
-                className="flex flex-col items-center"
+                className="flex flex-col items-center relative"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Heart className="h-6 w-6 mb-1" />
+                {totalWishlist > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs">
+                    {totalWishlist}
+                  </span>
+                )}
                 <span className="text-sm">Wishlist</span>
               </Link>
 
