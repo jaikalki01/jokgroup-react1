@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { toast } from "@/components/ui/use-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +50,7 @@ function parseStringArray(arr: any): string[] {
  useEffect(() => {
   const fetchProduct = async () => {
     try {
+
       const res = await axios.get<Product>(`http://127.0.0.1:8000/api/v1/product/product/${id}`);
       const productData = res.data;
 
@@ -64,6 +66,18 @@ function parseStringArray(arr: any): string[] {
         }
       }
       setProduct(productData);
+
+      let parsed = JSON.parse(data);
+      while (typeof parsed === 'string') {
+        parsed = JSON.parse(parsed);
+      }
+      if (Array.isArray(parsed) && parsed.length === 1 && Array.isArray(parsed[0])) {
+        parsed = parsed[0];
+      }
+      return parsed.map((item: string) =>
+        item.replace(/^"+|"+$/g, '').replace(/\\"/g, '')
+      ).filter((item: string) => item);
+
     } catch (error) {
       console.error("Error fetching product:", error);
       setProduct(null);
@@ -73,6 +87,7 @@ function parseStringArray(arr: any): string[] {
   };
   fetchProduct();
 }, [id]);
+
 
 
  const handleColorSelect = (color: string) => {
@@ -85,6 +100,57 @@ function parseStringArray(arr: any): string[] {
     const index = product.images.findIndex((img) => img === image);
     if (index !== -1) {
       setSelectedImage(index);
+
+        // Parse sizes and colors
+        productData.sizes = parseStringArray(productData.sizes);
+        productData.colors = parseStringArray(productData.colors);
+
+        // Parse images_by_color
+        if (productData.images_by_color) {
+          try {
+            let parsed = productData.images_by_color;
+            while (typeof parsed === 'string') {
+              parsed = JSON.parse(parsed);
+            }
+            setColorImageMap(parsed);
+          } catch (error) {
+            console.error("Failed to parse images_by_color", error);
+          }
+        }
+
+        // Fix images: ensure it's an array of strings and each image is a relative path
+        if (typeof productData.images === "string") {
+          try {
+            productData.images = JSON.parse(productData.images);
+          } catch {
+            productData.images = [];
+          }
+        }
+        if (!Array.isArray(productData.images)) {
+          productData.images = [];
+        }
+
+        setProduct(productData);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  const handleColorSelect = (color: string) => {
+    setSelectedColor(color);
+    if (!product) return;
+    const image = colorImageMap[color];
+    if (image) {
+      const index = product.images.findIndex((img) => img === image);
+      if (index !== -1) {
+        setSelectedImage(index);
+      }
+
     }
   }
 };
@@ -101,6 +167,10 @@ function parseStringArray(arr: any): string[] {
       return;
     }
     addToCart(product, quantity, selectedColor, selectedSize);
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
   };
 
   const handleWishlist = () => {
@@ -150,11 +220,24 @@ function parseStringArray(arr: any): string[] {
         {/* Product Images */}
         <div className="space-y-4">
           <div className="aspect-square rounded-lg overflow-hidden border">
-            <img
-              src={`http://127.0.0.1:8000/${product.images[selectedImage].replace(/^\/+/, "")}`}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+            {product.images.length > 0 ? (
+              <img
+                src={
+                  product.images[selectedImage]?.startsWith("http")
+                    ? product.images[selectedImage]
+                    : `http://127.0.0.1:8000/${product.images[selectedImage]?.replace(/^\/+/, "")}`
+                }
+                alt={product.name}
+                className="w-full h-full object-cover"
+                onError={e => (e.currentTarget.src = "/no-image.png")}
+              />
+            ) : (
+              <img
+                src="/no-image.png"
+                alt="No image"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
           <div className="flex gap-2 overflow-x-auto py-2">
             {product.images.map((image, index) => (
@@ -166,9 +249,14 @@ function parseStringArray(arr: any): string[] {
                 onClick={() => setSelectedImage(index)}
               >
                 <img
-                  src={`http://127.0.0.1:8000/${image.replace(/^\/+/, "")}`}
+                  src={
+                    image.startsWith("http")
+                      ? image
+                      : `http://127.0.0.1:8000/${image.replace(/^\/+/, "")}`
+                  }
                   alt={`${product.name} ${index + 1}`}
                   className="w-full h-full object-cover"
+                  onError={e => (e.currentTarget.src = "/no-image.png")}
                 />
               </div>
             ))}

@@ -4,6 +4,7 @@ import { Product } from '@/types';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -19,8 +20,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
     if (isWishlisted) {
       removeFromWishlist(product.id);
+      toast({ title: 'Removed from Wishlist', description: `${product.name} removed from your wishlist.` });
     } else {
       addToWishlist(product.id);
+      toast({ title: 'Added to Wishlist', description: `${product.name} added to your wishlist.` });
     }
   };
 
@@ -74,19 +77,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
               </Badge>
             )}
           </div>
-
-          {/* Wishlist Button */}
-          <Button
-            size="icon"
-            variant="secondary"
-            className={`absolute top-2 right-2 rounded-full w-8 h-8 p-1 ${
-              isWishlisted ? 'bg-rose-100 text-rose-500' : 'bg-white text-gray-400'
-            }`}
-            onClick={toggleWishlist}
-          >
-            <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
-          </Button>
         </Link>
+        {/* Wishlist Button OUTSIDE the Link */}
+        <Button
+          size="icon"
+          variant="secondary"
+          className={`absolute top-2 right-2 rounded-full w-8 h-8 p-1 ${
+            isWishlisted ? 'bg-rose-100 text-rose-500' : 'bg-white text-gray-400'
+          }`}
+          onClick={toggleWishlist}
+        >
+          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
+        </Button>
       </div>
 
       <div className="p-4 flex-grow flex flex-col">
