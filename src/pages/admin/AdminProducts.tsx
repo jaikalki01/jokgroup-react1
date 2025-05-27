@@ -49,8 +49,8 @@ const AddProductForm = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
-const [colors, setColors] = useState<string[]>([]);
-const [sizes, setSizes] = useState<string[]>([]);
+ const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
 const [colorInput, setColorInput] = useState('');
 const [sizeInput, setSizeInput] = useState('');
 
@@ -94,6 +94,7 @@ const [categories, setCategories] = useState<CategoryType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  
 
   const fetchProducts = async () => {
     try {
