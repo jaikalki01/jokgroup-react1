@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import { toast } from "@/components/ui/use-toast";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,82 +23,36 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [colorImageMap, setColorImageMap] = useState<{ [color: string]: string }>({});
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore();
-function deepParseJSON(str: any) {
-  let parsed = str;
-  try {
-    while (typeof parsed === "string") {
-      parsed = JSON.parse(parsed);
-    }
-  } catch {
-    // return last parsed if parsing fails
-  }
-  return parsed;
-}
 
-function parseStringArray(arr: any): string[] {
-  if (!Array.isArray(arr)) return [];
-  return arr.map((item) => {
-    const parsed = deepParseJSON(item);
-    // flatten if the parsed result is an array
-    if (Array.isArray(parsed)) return parsed;
-    return parsed;
-  }).flat(Infinity);
-}
+  const parseStringArray = (data: string | string[]) => {
+    if (Array.isArray(data)) return data;
+    if (typeof data !== 'string') return [];
 
-
- useEffect(() => {
-  const fetchProduct = async () => {
     try {
-
-      const res = await axios.get<Product>(`http://127.0.0.1:8000/api/v1/product/product/${id}`);
-      const productData = res.data;
-
-      productData.colors = parseStringArray(productData.colors);
-      productData.sizes = parseStringArray(productData.sizes);
-
-      if (productData.images_by_color) {
-        try {
-          const parsed = deepParseJSON(productData.images_by_color);
-          setColorImageMap(parsed);
-        } catch (error) {
-          console.error("Failed to parse images_by_color", error);
-        }
-      }
-      setProduct(productData);
-
       let parsed = JSON.parse(data);
       while (typeof parsed === 'string') {
         parsed = JSON.parse(parsed);
       }
+      
+      // Handle case where it might be an array of arrays
       if (Array.isArray(parsed) && parsed.length === 1 && Array.isArray(parsed[0])) {
         parsed = parsed[0];
       }
-      return parsed.map((item: string) =>
+
+      return parsed.map((item: string) => 
         item.replace(/^"+|"+$/g, '').replace(/\\"/g, '')
       ).filter((item: string) => item);
-
     } catch (error) {
-      console.error("Error fetching product:", error);
-      setProduct(null);
-    } finally {
-      setLoading(false);
+      console.error("Error parsing array:", error);
+      return [];
     }
   };
-  fetchProduct();
-}, [id]);
 
-
-
- const handleColorSelect = (color: string) => {
-  setSelectedColor(color);
-  console.log("Selected color:", color); // Add this
-  // update image preview if available
-  if (!product) return;
-  const image = colorImageMap[color];
-  if (image) {
-    const index = product.images.findIndex((img) => img === image);
-    if (index !== -1) {
-      setSelectedImage(index);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get<Product>(`http://127.0.0.1:8000/api/v1/product/product/${id}`);
+        const productData = res.data;
 
         // Parse sizes and colors
         productData.sizes = parseStringArray(productData.sizes);
@@ -116,18 +69,6 @@ function parseStringArray(arr: any): string[] {
           } catch (error) {
             console.error("Failed to parse images_by_color", error);
           }
-        }
-
-        // Fix images: ensure it's an array of strings and each image is a relative path
-        if (typeof productData.images === "string") {
-          try {
-            productData.images = JSON.parse(productData.images);
-          } catch {
-            productData.images = [];
-          }
-        }
-        if (!Array.isArray(productData.images)) {
-          productData.images = [];
         }
 
         setProduct(productData);
@@ -150,11 +91,8 @@ function parseStringArray(arr: any): string[] {
       if (index !== -1) {
         setSelectedImage(index);
       }
-
     }
-  }
-};
-
+  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -167,10 +105,6 @@ function parseStringArray(arr: any): string[] {
       return;
     }
     addToCart(product, quantity, selectedColor, selectedSize);
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
   };
 
   const handleWishlist = () => {
@@ -218,50 +152,35 @@ function parseStringArray(arr: any): string[] {
       {/* Product Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         {/* Product Images */}
-        <div className="space-y-4">
-          <div className="aspect-square rounded-lg overflow-hidden border">
-            {product.images.length > 0 ? (
-              <img
-                src={
-                  product.images[selectedImage]?.startsWith("http")
-                    ? product.images[selectedImage]
-                    : `http://127.0.0.1:8000/${product.images[selectedImage]?.replace(/^\/+/, "")}`
-                }
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onError={e => (e.currentTarget.src = "/no-image.png")}
-              />
-            ) : (
-              <img
-                src="/no-image.png"
-                alt="No image"
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-          <div className="flex gap-2 overflow-x-auto py-2">
-            {product.images.map((image, index) => (
-              <div
-                key={index}
-                className={`cursor-pointer border rounded w-20 h-20 flex-shrink-0 ${
-                  selectedImage === index ? "border-navy border-2" : "border-gray-200"
-                }`}
-                onClick={() => setSelectedImage(index)}
-              >
-                <img
-                  src={
-                    image.startsWith("http")
-                      ? image
-                      : `http://127.0.0.1:8000/${image.replace(/^\/+/, "")}`
-                  }
-                  alt={`${product.name} ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={e => (e.currentTarget.src = "/no-image.png")}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+<div className="space-y-4">
+  <div className="aspect-square rounded-lg overflow-hidden border">
+    <img
+      src={`http://127.0.0.1:8000${product.images[selectedImage]}`}
+      alt={product.name}
+      className="w-full h-full object-cover"
+    />
+  </div>
+  <div className="flex gap-2 overflow-x-auto py-2">
+    {product.images.map((image, index) => (
+      <div
+        key={index}
+        className={`cursor-pointer border rounded w-20 h-20 flex-shrink-0 ${
+          selectedImage === index ? "border-navy border-2" : "border-gray-200"
+        }`}
+        onClick={() => setSelectedImage(index)}
+      >
+        <img
+          src={`http://127.0.0.1:8000${image}`}
+          alt={`${product.name} ${index + 1}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    ))}
+  </div>
+</div>
+
+
+
 
         {/* Product Details */}
         <div>
