@@ -36,19 +36,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   // Safely parse images array from JSON string or use if already array
   let imagesArray: string[] = [];
-  try {
-    imagesArray = Array.isArray(product.images)
-      ? product.images
-      : JSON.parse(product.images || "[]");
-  } catch {
-    imagesArray = [];
-  }
+try {
+  imagesArray = Array.isArray(product.images)
+    ? product.images
+    : JSON.parse(product.images || "[]");
+} catch {
+  imagesArray = [];
+}
 
-  // Compose image URL for the first image or use placeholder
-  const imageURL =
-    imagesArray.length > 0
-      ? `http://localhost:8000/${imagesArray[0].replace(/^\/+/, "")}`
-      : "/placeholder.png";
+const imageURL =
+  imagesArray.length > 0
+    ? `http://localhost:8000${imagesArray[0].replace(/^\/+/, "/")}`
+    : "/placeholder.png";
+
+
 
   return (
     <div className="product-card flex flex-col h-full">
