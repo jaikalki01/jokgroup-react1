@@ -675,16 +675,18 @@ const AdminCoupons = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>ID No.</TableHead>
             <TableHead>Code</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Discount</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedCoupons.map((coupon) => (
+          {sortedCoupons.map((coupon, idx) => (
             <TableRow key={coupon.id}>
+              <TableCell>{idx + 1}</TableCell>
               <TableCell>{coupon.code}</TableCell>
               <TableCell>{coupon.description}</TableCell>
               <TableCell>
@@ -695,8 +697,8 @@ const AdminCoupons = () => {
                   {coupon.active ? 'Active' : 'Inactive'}
                 </span>
               </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
+              <TableCell className="text-right">
+                <div className="flex gap-2 justify-end">
                   <Button
                     size="icon"
                     variant="outline"
