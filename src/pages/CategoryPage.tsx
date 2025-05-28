@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Filter, Search } from 'lucide-react';
 
 type Category = {
+  category_id: string;
   id: string;
   name: string;
   slug: string;

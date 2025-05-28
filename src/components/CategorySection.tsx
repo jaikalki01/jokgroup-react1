@@ -57,7 +57,7 @@ const CategorySection = () => {
                     : category.image
                     ? category.image.startsWith('/static/')
                       ? `http://localhost:8000${category.image}`
-                      : `http://localhost:8000/static/products/${category.image.replace(/^\/+/, '')}`
+                      : `http://localhost:8000/static/category/${category.image.replace(/^\/+/, '')}`
                     : '/placeholder.svg'
                 }
                 alt={category.name}

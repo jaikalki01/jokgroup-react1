@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import axios from 'axios';
+import { Select } from '@/components/ui/select';
 
 
 interface Product {
@@ -89,7 +90,9 @@ interface CategoryType {
 
   const [products, setProducts] = useState<Product[]>([]);
 const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [subcategories, setSubcategories] = useState<{ id: number; name: string }[]>([]);
+  const [subcategories, setSubcategories] = useState<{
+    category_id(category_id: any): unknown; id: number; name: string 
+}[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -132,11 +135,18 @@ const subcategoryMap = Object.fromEntries(allSubcategories.map(sub => [sub.id, s
 
 
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked, files } = e.target as HTMLInputElement;
-    if (type === 'file' && files) {
-      setFormData(prev => ({ ...prev, images: Array.from(files) }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const target = e.target;
+    const { name, value, type } = target;
+    if (type === 'file') {
+      const fileInput = target as HTMLInputElement;
+      if (fileInput.files) {
+        setFormData(prev => ({ ...prev, images: Array.from(fileInput.files!) }));
+      }
     } else if (type === 'checkbox') {
+      const checked = (target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -342,12 +352,52 @@ const subcategoryMap = Object.fromEntries(allSubcategories.map(sub => [sub.id, s
             </DialogHeader>
             <form onSubmit={handleSubmit} className="grid gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input name="name" placeholder="Product Name" value={formData.name} onChange={handleChange} />
-                <Input name="category_id" placeholder="Category Id" value={formData.category_id} onChange={handleChange} />
+                {/* Category Dropdown */}
+                <div>
+      <label className="block mb-1 font-medium">Category</label>
+      <select
+        name="category_id"
+        value={formData.category_id}
+        onChange={handleChange}
+        className="w-full border rounded px-3 py-2"
+        required
+      >
+        <option value="">Select Category</option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.name}
+          </option>
+        ))}
+      </select>
+    </div>
+    {/* Subcategory Dropdown */}
+    <div>
+      <label className="block mb-1 font-medium">Subcategory</label>
+      <select
+        name="subcategory_id"
+        value={formData.subcategory_id}
+        onChange={handleChange}
+        className="w-full border rounded px-3 py-2"
+        required
+      >
+        <option value="">Select Subcategory</option>
+        {Array.isArray(subcategories) &&
+          subcategories
+            .filter((sub) =>
+              formData.category_id
+                ? String(sub.category_id) === String(formData.category_id)
+                : true
+            )
+            .map((sub) => (
+              <option key={sub.id} value={sub.id}>
+                {sub.name}
+              </option>
+            ))}
+      </select>
+    </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input name="subcategory_id" placeholder="Subcategory Id" value={formData.subcategory_id} onChange={handleChange} />
-              </div>
+              {/* Product Name Input */}
+              <Input name="name" placeholder="Product Name" value={formData.name} onChange={handleChange} />
               <Textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input name="price" placeholder="Price" type="number" value={formData.price} onChange={handleChange} />
