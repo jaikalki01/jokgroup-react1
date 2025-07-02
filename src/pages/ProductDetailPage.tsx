@@ -170,6 +170,36 @@ const ProductDetailPage = () => {
       {/* Product Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         {/* Product Images */}
+
+<div className="space-y-4">
+  <div className="aspect-square rounded-lg overflow-hidden border">
+    <img
+      src={`http://127.0.0.1:8000/static${product.images[selectedImage]}`}
+      alt={product.name}
+      className="w-full h-full object-cover"
+    />
+  </div>
+  <div className="flex gap-2 overflow-x-auto py-2">
+    {product.images.map((image, index) => (
+      <div
+        key={index}
+        className={`cursor-pointer border rounded w-20 h-20 flex-shrink-0 ${
+          selectedImage === index ? "border-navy border-2" : "border-gray-200"
+        }`}
+        onClick={() => setSelectedImage(index)}
+      >
+        <img
+          src={`http://127.0.0.1:8000${image}`}
+          alt={`${product.name} ${index + 1}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    ))}
+  </div>
+</div>
+
+
+
         <div className="space-y-4">
           <div className="aspect-square rounded-lg overflow-hidden border">
             {product.images.length > 0 ? (
@@ -214,6 +244,7 @@ const ProductDetailPage = () => {
             ))}
           </div>
         </div>
+
 
         {/* Product Details */}
         <div>

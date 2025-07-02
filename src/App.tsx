@@ -18,6 +18,15 @@ import WishlistPage from "@/pages/WishlistPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import NotFound from "@/pages/NotFound";
+import ForgotPasswordPage from '@/pages/user/Forgotpasswordpage';
+import ResetPasswordPage from '@/pages/user/Resetpasswordpage';
+
+// In your Router component
+
+
+
+// In your Router component
+
 
 // User Account Pages
 import ProfilePage from "@/pages/user/ProfilePage";
@@ -51,7 +60,8 @@ const App = () => (
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/coupons" element={<AdminCoupons />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
-
+<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+<Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* User Account routes */}
             <Route

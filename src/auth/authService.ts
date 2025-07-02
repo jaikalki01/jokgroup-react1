@@ -6,10 +6,18 @@ import { toast } from 'sonner';
 // Login function
 export const login = async (email: string, password: string): Promise<User> => {
   try {
-    const response = await axios.post<AuthResponse>(`http://localhost:8000/api/auth/login`, {
-      email,
-      password
-    });
+    const formData = new URLSearchParams();
+   formData.append('email', email); 
+formData.append('password', password);
+
+
+    const response = await axios.post<AuthResponse>(
+      `http://localhost:8000/api/auth/login`,
+      formData,
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }
+    );
 
     // Store token in localStorage
     localStorage.setItem('currentUser', JSON.stringify(response.data.user));
@@ -23,11 +31,13 @@ export const login = async (email: string, password: string): Promise<User> => {
       ...response.data.user,
       token: response.data.token
     };
+
   } catch (error: any) {
     const message = error?.response?.data?.message || 'Login failed';
     throw new Error(message);
   }
 };
+
 type RegisterResponse = {
   message: string;
 };

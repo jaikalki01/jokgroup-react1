@@ -14,16 +14,31 @@ interface FilterSidebarProps {
 
 const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   const { state, dispatch } = useStore();
-  const { filters } = state;
+  
+  // Provide default values for filters
+  const defaultFilters = {
+    categories: [],
+    subcategories: [],
+    colors: [],
+    sizes: [],
+    priceRange: [0, 5000] as [number, number]
+  };
 
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [localFilters, setLocalFilters] = useState({
+
+    ...defaultFilters,
+    ...state.filters
+  });
+  const [priceRange, setPriceRange] = useState(localFilters.priceRange);
+
     categories: filters.categories || [],
     subcategories: filters.subcategories || [],
     sizes: filters.sizes || [],
   });
   const [priceRange, setPriceRange] = useState(filters.priceRange);
+
 
   const allSizes = [
     'XS', 'S', 'M', 'L', 'XL', 'XXL', '26', '28', '30', '32', '34', '36',
@@ -47,17 +62,42 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   }, []);
 
   useEffect(() => {
-    setLocalFilters({ ...filters });
-    setPriceRange(filters.priceRange);
-  }, [filters]);
+    if (state.filters) {
+      setLocalFilters(prev => ({
+        ...defaultFilters,
+        ...state.filters
+      }));
+      setPriceRange(state.filters.priceRange || defaultFilters.priceRange);
+    }
+  }, [state.filters]);
 
   // Category checkbox handler
   const handleCategoryChange = (slug: string) => {
-    const updated = localFilters.categories.includes(slug)
-      ? localFilters.categories.filter(c => c !== slug)
-      : [...localFilters.categories, slug];
-    setLocalFilters({ ...localFilters, categories: updated });
+    setLocalFilters(prev => ({
+      ...prev,
+      categories: prev.categories.includes(slug)
+        ? prev.categories.filter(c => c !== slug)
+        : [...prev.categories, slug]
+    }));
   };
+
+  const handleSubcategoryChange = (slug: string) => {
+    setLocalFilters(prev => ({
+      ...prev,
+      subcategories: prev.subcategories.includes(slug)
+        ? prev.subcategories.filter(s => s !== slug)
+        : [...prev.subcategories, slug]
+    }));
+  };
+
+
+  const handleColorChange = (color: string) => {
+    setLocalFilters(prev => ({
+      ...prev,
+      colors: prev.colors.includes(color)
+        ? prev.colors.filter(c => c !== color)
+        : [...prev.colors, color]
+    }));
 
   // Subcategory checkbox handler
   const handleSubcategoryChange = (slug: string) => {
@@ -65,13 +105,16 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
       ? localFilters.subcategories.filter(s => s !== slug)
       : [...localFilters.subcategories, slug];
     setLocalFilters({ ...localFilters, subcategories: updated });
+
   };
 
   const handleSizeChange = (size: string) => {
-    const updated = localFilters.sizes.includes(size)
-      ? localFilters.sizes.filter(s => s !== size)
-      : [...localFilters.sizes, size];
-    setLocalFilters({ ...localFilters, sizes: updated });
+    setLocalFilters(prev => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter(s => s !== size)
+        : [...prev.sizes, size]
+    }));
   };
 
   const handlePriceChange = (values: number[]) => {
@@ -79,6 +122,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   };
 
   const handleApplyFilters = async () => {
+
     const query = {
       category: localFilters.categories.join(','),
       subcategory: localFilters.subcategories.join(','),
@@ -87,35 +131,73 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
       max_price: priceRange[1],
     };
 
+
     try {
+      // Prepare query parameters
+      const params = new URLSearchParams();
+      
+      if (localFilters.categories.length > 0) {
+        params.append('categories', localFilters.categories.join(','));
+      }
+      
+      if (localFilters.subcategories.length > 0) {
+        params.append('subcategories', localFilters.subcategories.join(','));
+      }
+      
+      if (localFilters.colors.length > 0) {
+        params.append('colors', localFilters.colors.join(','));
+      }
+      
+      if (localFilters.sizes.length > 0) {
+        params.append('sizes', localFilters.sizes.join(','));
+      }
+      
+      params.append('min_price', priceRange[0].toString());
+      params.append('max_price', priceRange[1].toString());
+
       const res = await axios.get('http://127.0.0.1:8000/api/v1/product/list', {
-        params: query,
+        params
       });
+
+      // Update global state
+      dispatch({ 
+        type: 'SET_FILTERED_PRODUCTS', 
+        payload: res.data.products || res.data || [] 
+      });
+
       const products = Array.isArray(res.data)
         ? res.data
         : Array.isArray((res.data as { products?: any[] }).products)
           ? (res.data as { products: any[] }).products
           : [];
       dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: products });
+
       dispatch({
         type: 'SET_FILTERS',
-        payload: { ...localFilters, priceRange },
+        payload: { 
+          ...localFilters,
+          priceRange 
+        }
       });
-      if (onClose) onClose();
+      
+      onClose();
     } catch (err) {
       console.error('Failed to fetch filtered products:', err);
+      // Optionally show error to user
     }
   };
 
   const handleResetFilters = () => {
+    setLocalFilters(defaultFilters);
+    setPriceRange(defaultFilters.priceRange);
     dispatch({ type: 'RESET_FILTERS' });
-    if (onClose) onClose();
+    onClose();
   };
 
   return (
     <div className={`
       fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out 
-      ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:sticky md:top-20 md:h-screen md:translate-x-0 overflow-y-auto
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:sticky md:top-20 md:h-[calc(100vh-5rem)] md:translate-x-0 overflow-y-auto
     `}>
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
@@ -160,6 +242,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
         <div className="mb-6">
           <h3 className="font-medium mb-3">Price Range</h3>
           <Slider
+            min={0}
             max={5000}
             step={100}
             value={priceRange}
@@ -171,6 +254,25 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
             <span>₹{priceRange[1]}</span>
           </div>
         </div>
+
+
+        {/* Colors */}
+        <div className="mb-6">
+          <h3 className="font-medium mb-3">Colors</h3>
+          <div className="flex flex-wrap gap-2">
+            {allColors.map(color => (
+              <div
+                key={color}
+                className={`w-8 h-8 rounded-full border cursor-pointer flex items-center justify-center 
+                ${localFilters.colors.includes(color) ? 'border-navy ring-2 ring-navy ring-offset-2' : 'border-gray-300'}`}
+                style={{ backgroundColor: color === 'light-blue' ? 'lightblue' : color }}
+                onClick={() => handleColorChange(color)}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+
 
         {/* Sizes */}
         <div className="mb-6">
@@ -190,7 +292,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-3 mt-8">
+        <div className="flex gap-3 mt-8 sticky bottom-4 bg-white pt-4 pb-2">
           <Button onClick={handleApplyFilters} className="flex-1">
             Apply Filters
           </Button>
