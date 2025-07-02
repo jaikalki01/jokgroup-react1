@@ -27,13 +27,23 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [localFilters, setLocalFilters] = useState({
+
     ...defaultFilters,
     ...state.filters
   });
   const [priceRange, setPriceRange] = useState(localFilters.priceRange);
 
-  const allColors = ['white', 'black', 'blue', 'red', 'green', 'pink', 'purple', 'orange', 'gray', 'brown', 'navy', 'olive', 'beige', 'silver', 'gold', 'rose-gold', 'light-blue'];
-  const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '26', '28', '30', '32', '34', '36', '3-4Y', '5-6Y', '7-8Y', 'ONE SIZE'];
+    categories: filters.categories || [],
+    subcategories: filters.subcategories || [],
+    sizes: filters.sizes || [],
+  });
+  const [priceRange, setPriceRange] = useState(filters.priceRange);
+
+
+  const allSizes = [
+    'XS', 'S', 'M', 'L', 'XL', 'XXL', '26', '28', '30', '32', '34', '36',
+    '3-4Y', '5-6Y', '7-8Y', 'ONE SIZE'
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +71,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
     }
   }, [state.filters]);
 
+  // Category checkbox handler
   const handleCategoryChange = (slug: string) => {
     setLocalFilters(prev => ({
       ...prev,
@@ -79,6 +90,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
     }));
   };
 
+
   const handleColorChange = (color: string) => {
     setLocalFilters(prev => ({
       ...prev,
@@ -86,6 +98,14 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
         ? prev.colors.filter(c => c !== color)
         : [...prev.colors, color]
     }));
+
+  // Subcategory checkbox handler
+  const handleSubcategoryChange = (slug: string) => {
+    const updated = localFilters.subcategories.includes(slug)
+      ? localFilters.subcategories.filter(s => s !== slug)
+      : [...localFilters.subcategories, slug];
+    setLocalFilters({ ...localFilters, subcategories: updated });
+
   };
 
   const handleSizeChange = (size: string) => {
@@ -102,6 +122,16 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   };
 
   const handleApplyFilters = async () => {
+
+    const query = {
+      category: localFilters.categories.join(','),
+      subcategory: localFilters.subcategories.join(','),
+      size: localFilters.sizes.join(','),
+      min_price: priceRange[0],
+      max_price: priceRange[1],
+    };
+
+
     try {
       // Prepare query parameters
       const params = new URLSearchParams();
@@ -134,7 +164,14 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
         type: 'SET_FILTERED_PRODUCTS', 
         payload: res.data.products || res.data || [] 
       });
-      
+
+      const products = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray((res.data as { products?: any[] }).products)
+          ? (res.data as { products: any[] }).products
+          : [];
+      dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: products });
+
       dispatch({
         type: 'SET_FILTERS',
         payload: { 
@@ -218,6 +255,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
           </div>
         </div>
 
+
         {/* Colors */}
         <div className="mb-6">
           <h3 className="font-medium mb-3">Colors</h3>
@@ -234,6 +272,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
             ))}
           </div>
         </div>
+
 
         {/* Sizes */}
         <div className="mb-6">
