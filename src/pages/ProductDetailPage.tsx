@@ -155,7 +155,7 @@ const ProductDetailPage = () => {
 <div className="space-y-4">
   <div className="aspect-square rounded-lg overflow-hidden border">
     <img
-      src={`http://127.0.0.1:8000${product.images[selectedImage]}`}
+      src={`http://127.0.0.1:8000/static${product.images[selectedImage]}`}
       alt={product.name}
       className="w-full h-full object-cover"
     />

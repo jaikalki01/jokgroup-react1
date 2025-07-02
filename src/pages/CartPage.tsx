@@ -238,7 +238,7 @@ const calculateTotal = (subtotal: number, shipping: number, discount: number, di
                       console.error("Error parsing product images:", e);
                     }
                     const firstImage = imagesArray[0]
-                      ? `http://localhost:8000/${imagesArray[0].replace(/^\/+/, "")}`
+                      ? `http://localhost:8000/static/${imagesArray[0].replace(/^\/+/, "")}`
                       : "/placeholder.svg";
 
                     return (

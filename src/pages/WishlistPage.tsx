@@ -100,7 +100,7 @@ const WishlistPage = () => {
                     ? product.images
                     : JSON.parse(product.images);
                   if (images.length > 0) {
-                    imageUrl = `http://127.0.0.1:8000/${images[0].replace(/^\/+/, '')}`;
+                    imageUrl = `http://127.0.0.1:8000/static/${images[0].replace(/^\/+/, '')}`;
                   }
                 } catch (err) {
                   console.error("Error parsing product images:", err);

@@ -17,59 +17,67 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const toggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (isWishlisted) {
       removeFromWishlist(product.id);
-      toast({ title: 'Removed from Wishlist', description: `${product.name} removed from your wishlist.` });
+      toast({
+        title: 'Removed from Wishlist',
+        description: `${product.name} removed from your wishlist.`,
+      });
     } else {
       addToWishlist(product.id);
-      toast({ title: 'Added to Wishlist', description: `${product.name} added to your wishlist.` });
+      toast({
+        title: 'Added to Wishlist',
+        description: `${product.name} added to your wishlist.`,
+      });
     }
   };
 
- function formatPrice(price?: number | null) {
-  if (price == null || isNaN(price)) {
-    return "N/A"; // or fallback value like "0"
-  }
-  return price.toLocaleString(undefined, { style: "currency", currency: "INR" });
-}
+  const formatPrice = (price?: number | null) => {
+    if (price == null || isNaN(price)) return 'N/A';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+const getImageUrl = (img: string) => {
+  if (img.startsWith("http")) return img;
 
-  // Safely parse images array from JSON string or use if already array
-  let imagesArray: string[] = [];
-try {
-  imagesArray = Array.isArray(product.images)
-    ? product.images
-    : JSON.parse(product.images || "[]");
-} catch {
-  imagesArray = [];
-}
+  // Remove leading slashes and possible double "static/" prefix
+  const cleanPath = img.replace(/^\/+/, '').replace(/^static\//, '');
 
-const imageURL =
-  imagesArray.length > 0
-    ? `http://localhost:8000${imagesArray[0].replace(/^\/+/, "/")}`
-    : "/placeholder.png";
+  return `http://localhost:8000/static/${cleanPath}`;
+};
+
+const imageUrl = getImageUrl(product.images[0]);
 
 
+
+ // For debugging
 
   return (
-    <div className="product-card flex flex-col h-full">
-      <div className="relative overflow-hidden group">
-        <Link to={`/product/${product.id}`}>
+    <div className="product-card flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="relative overflow-hidden group aspect-square">
+        <Link to={`/product/${product.id}`} className="block h-full">
           <img
-            src={imageURL}
+            src={imageUrl}
             alt={product.name}
-            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.png';
+            }}
+            loading="lazy"
           />
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {product.newArrival && (
-              <Badge className="bg-accent text-white">New</Badge>
+              <Badge className="bg-blue-600 text-white">New</Badge>
             )}
             {product.bestSeller && (
-              <Badge className="bg-amber-500 text-white">Best Seller</Badge>
+              <Badge className="bg-amber-500 text-white">Bestseller</Badge>
             )}
-            {product.discountPrice && (
+            {product.discountPrice && product.price > 0 && (
               <Badge className="bg-green-600 text-white">
                 {Math.round(
                   ((product.price - product.discountPrice) / product.price) * 100
@@ -79,43 +87,58 @@ const imageURL =
             )}
           </div>
         </Link>
-        {/* Wishlist Button OUTSIDE the Link */}
+
+        {/* Wishlist Button */}
         <Button
           size="icon"
-          variant="secondary"
-          className={`absolute top-2 right-2 rounded-full w-8 h-8 p-1 ${
-            isWishlisted ? 'bg-rose-100 text-rose-500' : 'bg-white text-gray-400'
+          variant="ghost"
+          className={`absolute top-2 right-2 rounded-full w-9 h-9 p-0 ${
+            isWishlisted
+              ? 'text-rose-500 hover:bg-rose-50'
+              : 'text-gray-400 hover:bg-gray-100'
           }`}
           onClick={toggleWishlist}
         >
-          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
+          <Heart
+            className={`h-5 w-5 ${isWishlisted ? 'fill-rose-500' : ''}`}
+          />
         </Button>
       </div>
 
       <div className="p-4 flex-grow flex flex-col">
         <Link to={`/product/${product.id}`} className="flex-grow">
-          <h3 className="font-medium text-navy mb-1 hover:underline">{product.name}</h3>
-          <div className="text-gray-600 text-sm mb-2">{product.category}</div>
+          <h3 className="font-medium text-gray-900 mb-1 line-clamp-2 hover:underline">
+            {product.name}
+          </h3>
+          <div className="text-gray-500 text-sm mb-2">{product.category}</div>
         </Link>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto">
           <div className="flex items-baseline gap-2">
             {product.discountPrice ? (
               <>
-                <span className="font-bold">{formatPrice(product.discountPrice)}</span>
-                <span className="text-gray-400 text-sm line-through">
-                  {formatPrice(product.price)}
+                <span className="font-bold text-gray-900">
+                  {formatPrice(product.discountPrice)}
                 </span>
+                {product.price > 0 && (
+                  <span className="text-gray-400 text-sm line-through">
+                    {formatPrice(product.price)}
+                  </span>
+                )}
               </>
             ) : (
-              <span className="font-bold">{formatPrice(product.price)}</span>
+              <span className="font-bold text-gray-900">
+                {formatPrice(product.price)}
+              </span>
             )}
           </div>
 
-          <div className="flex items-center text-amber-500">
-            <span className="text-sm font-medium">{product.rating}</span>
-            <span className="text-xs ml-1">({product.reviews})</span>
-          </div>
+          {product.rating && (
+            <div className="flex items-center text-amber-500">
+              <span className="text-sm font-medium">{product.rating}</span>
+              <span className="text-xs ml-1">({product.reviews || 0})</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
