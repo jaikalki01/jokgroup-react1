@@ -14,7 +14,7 @@ interface FilterSidebarProps {
 
 const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   const { state, dispatch } = useStore();
-  
+
   // Provide default values for filters
   const defaultFilters = {
     categories: [],
@@ -27,22 +27,19 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [localFilters, setLocalFilters] = useState({
-
     ...defaultFilters,
     ...state.filters
   });
   const [priceRange, setPriceRange] = useState(localFilters.priceRange);
 
-    categories: filters.categories || [],
-    subcategories: filters.subcategories || [],
-    sizes: filters.sizes || [],
-  });
-  const [priceRange, setPriceRange] = useState(filters.priceRange);
-
-
   const allSizes = [
     'XS', 'S', 'M', 'L', 'XL', 'XXL', '26', '28', '30', '32', '34', '36',
     '3-4Y', '5-6Y', '7-8Y', 'ONE SIZE'
+  ];
+
+  // Define allColors array
+  const allColors = [
+    'red', 'blue', 'green', 'yellow', 'black', 'white', 'gray', 'pink', 'purple', 'orange', 'brown', 'light-blue'
   ];
 
   useEffect(() => {
@@ -81,6 +78,7 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
     }));
   };
 
+  // Subcategory checkbox handler
   const handleSubcategoryChange = (slug: string) => {
     setLocalFilters(prev => ({
       ...prev,
@@ -90,7 +88,6 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
     }));
   };
 
-
   const handleColorChange = (color: string) => {
     setLocalFilters(prev => ({
       ...prev,
@@ -98,14 +95,6 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
         ? prev.colors.filter(c => c !== color)
         : [...prev.colors, color]
     }));
-
-  // Subcategory checkbox handler
-  const handleSubcategoryChange = (slug: string) => {
-    const updated = localFilters.subcategories.includes(slug)
-      ? localFilters.subcategories.filter(s => s !== slug)
-      : [...localFilters.subcategories, slug];
-    setLocalFilters({ ...localFilters, subcategories: updated });
-
   };
 
   const handleSizeChange = (size: string) => {
@@ -122,36 +111,26 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
   };
 
   const handleApplyFilters = async () => {
-
-    const query = {
-      category: localFilters.categories.join(','),
-      subcategory: localFilters.subcategories.join(','),
-      size: localFilters.sizes.join(','),
-      min_price: priceRange[0],
-      max_price: priceRange[1],
-    };
-
-
     try {
       // Prepare query parameters
       const params = new URLSearchParams();
-      
+
       if (localFilters.categories.length > 0) {
         params.append('categories', localFilters.categories.join(','));
       }
-      
+
       if (localFilters.subcategories.length > 0) {
         params.append('subcategories', localFilters.subcategories.join(','));
       }
-      
+
       if (localFilters.colors.length > 0) {
         params.append('colors', localFilters.colors.join(','));
       }
-      
+
       if (localFilters.sizes.length > 0) {
         params.append('sizes', localFilters.sizes.join(','));
       }
-      
+
       params.append('min_price', priceRange[0].toString());
       params.append('max_price', priceRange[1].toString());
 
@@ -160,11 +139,6 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
       });
 
       // Update global state
-      dispatch({ 
-        type: 'SET_FILTERED_PRODUCTS', 
-        payload: res.data.products || res.data || [] 
-      });
-
       const products = Array.isArray(res.data)
         ? res.data
         : Array.isArray((res.data as { products?: any[] }).products)
@@ -174,12 +148,12 @@ const FilterSidebar = ({ isOpen, onClose }: FilterSidebarProps) => {
 
       dispatch({
         type: 'SET_FILTERS',
-        payload: { 
+        payload: {
           ...localFilters,
-          priceRange 
+          priceRange
         }
       });
-      
+
       onClose();
     } catch (err) {
       console.error('Failed to fetch filtered products:', err);
