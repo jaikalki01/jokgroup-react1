@@ -53,7 +53,13 @@ const LoginPage = () => {
     
     const success = await login(email, password);
     if (success) {
-      navigate('/');
+      // Check if the user is an admin and redirect accordingly
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      if (currentUser && currentUser.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
   };
   
