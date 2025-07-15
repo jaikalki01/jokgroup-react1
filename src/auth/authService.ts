@@ -16,6 +16,7 @@ export const login = async (email: string, password: string): Promise<User> => {
     const isUser = email.toLowerCase() === 'john@example.com' && password === 'password123';
     
     // For demo purposes, handle admin login separately
+    // For demo admin login
     if (isAdmin) {
       const adminUser: User = {
         id: 'admin-1',
@@ -62,7 +63,7 @@ export const login = async (email: string, password: string): Promise<User> => {
     }
     
     const response = await axios.post<AuthResponse>(
-      `http://localhost:8000/api/auth/login`,
+      `http://localhost:8000/login`,
       formData,
       {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }

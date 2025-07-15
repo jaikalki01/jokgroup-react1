@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/ui/use-toast';
+import axios from 'axios';
+import { BASE_URL } from '@/api/api';
 
 const AccountSettingsPage = () => {
   const { state } = useStore();
@@ -18,14 +20,107 @@ const AccountSettingsPage = () => {
     offers: true,
     updates: false,
   });
+
+  // Add state for password fields
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   
-  const handleSubmitPassword = (e: React.FormEvent) => {
+  // Add loading state
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Handle input changes
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, we would update the password here
-    toast({
-      title: "Password Updated",
-      description: "Your password has been updated successfully.",
-    });
+    
+    // Validate passwords
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "All password fields are required.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New password and confirmation do not match.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // Get token from current user
+      const token = currentUser?.token;
+      
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to change your password.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Make API call to change password
+      await axios.post(
+        `${BASE_URL}/users/change-password`,
+        {
+         old_password: passwordData.currentPassword,
+          new_password: passwordData.newPassword
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      // Reset form fields
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      toast({
+        title: "Password Updated",
+        description: "Your password has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleToggle = (name: string) => {
@@ -53,6 +148,8 @@ const AccountSettingsPage = () => {
                   id="currentPassword"
                   name="currentPassword"
                   type="password"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordChange}
                 />
               </div>
               
@@ -62,6 +159,8 @@ const AccountSettingsPage = () => {
                   id="newPassword"
                   name="newPassword"
                   type="password"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
                 />
               </div>
               
@@ -71,10 +170,14 @@ const AccountSettingsPage = () => {
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
                 />
               </div>
               
-              <Button type="submit">Update Password</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Updating...' : 'Update Password'}
+              </Button>
             </form>
           </CardContent>
         </Card>

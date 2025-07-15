@@ -25,6 +25,7 @@ import {
   UserCog,
   Mail
 } from 'lucide-react';
+import { BASE_URL } from '@/api/api'; // Import BASE_URL from api.ts
 
 interface Address {
   id: string;
@@ -64,7 +65,8 @@ const AdminUsers = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://127.0.0.1:8000/api/users');
+        // Use the correct API endpoint with BASE_URL
+        const response = await axios.get(`${BASE_URL}/admin/me`);
         
         // Ensure we have an array of users
         if (!Array.isArray(response.data)) {
@@ -134,7 +136,8 @@ const AdminUsers = () => {
   
   const handleDeleteUser = async (userId: string) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/users/${userId}`);
+      // Use the correct API endpoint with BASE_URL
+      await axios.delete(`${BASE_URL}/users/${userId}`);
       setUsers(users.filter(user => user.id !== userId));
       toast({
         title: 'Success',
