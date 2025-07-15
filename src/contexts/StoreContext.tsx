@@ -43,26 +43,26 @@ type StoreAction =
   | { type: 'RESET_FILTERS' }
   | { type: 'SET_COUPONS'; payload: Coupon[] };
 
-  const initialState: StoreState = {
-    products: [],
-    filteredProducts: [],
-    cart: [],
-    wishlist: [],
-    currentUser: null,
-    isLoggedIn: false,
-    searchQuery: '',
-    users: [],
-    coupons: [],
-    filters: {
-      categories: [],
-      subcategories: [], // ✅ Add this line
-      priceRange: [0, 5000],
-      colors: [],
-      sizes: [],
-    },
-    loading: false,
-    authError: null,
-  };
+const initialState: StoreState = {
+  products: [],
+  filteredProducts: [],
+  cart: [],
+  wishlist: [],
+  currentUser: null,
+  isLoggedIn: false,
+  searchQuery: '',
+  users: [],
+  coupons: [],
+  filters: {
+    categories: [],
+    subcategories: [], // ✅ Add this line
+    priceRange: [0, 5000],
+    colors: [],
+    sizes: [],
+  },
+  loading: false,
+  authError: null,
+};
   
 
 const getItemFromStorage = (key: string) => {
@@ -339,10 +339,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       dispatch({ type: 'SET_LOADING_STATE', payload: true });
       const user = await apiLogin(email, password);
       dispatch({ type: 'SET_USER', payload: user });
-      saveToStorage('currentUser', user);
+      // No need to save to storage again as it's already done in apiLogin
       toast({ title: 'Logged in successfully' });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       dispatch({ type: 'SET_AUTH_ERROR', payload: 'Invalid credentials' });
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
       return false;
@@ -361,10 +361,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       dispatch({ type: 'SET_LOADING_STATE', payload: true });
       const user = await apiRegister(firstName, lastName, email, password);
       dispatch({ type: 'SET_USER', payload: user });
-      saveToStorage('currentUser', user);
+      // No need to save to storage again as it's already done in apiRegister
       toast({ title: 'Registered successfully' });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       dispatch({ type: 'SET_AUTH_ERROR', payload: 'Registration failed' });
       toast({ title: 'Registration failed', description: error.message, variant: 'destructive' });
       return false;

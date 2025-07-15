@@ -18,15 +18,10 @@ import WishlistPage from "@/pages/WishlistPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import NotFound from "@/pages/NotFound";
-import ForgotPasswordPage from '@/pages/user/Forgotpasswordpage';
-import ResetPasswordPage from '@/pages/user/Resetpasswordpage';
+import ForgotPasswordPage from '@/pages/user/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/user/ResetPasswordPage';
 
 // In your Router component
-
-
-
-// In your Router component
-
 
 // User Account Pages
 import ProfilePage from "@/pages/user/ProfilePage";
@@ -42,6 +37,7 @@ import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminCategories from "@/pages/admin/AdminCategories";
 import AdminCoupons from "@/pages/admin/AdminCoupons";
 import AdminAnalytics from "@/pages/admin/AdminAnalytics";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -54,14 +50,14 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Admin routes */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/categories" element={<AdminCategories />} />
-            <Route path="/admin/coupons" element={<AdminCoupons />} />
-            <Route path="/admin/analytics" element={<AdminAnalytics />} />
-<Route path="/forgot-password" element={<ForgotPasswordPage />} />
-<Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+            <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
+            <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
+            <Route path="/admin/categories" element={<AdminLayout><AdminCategories /></AdminLayout>} />
+            <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
+            <Route path="/admin/analytics" element={<AdminLayout><AdminAnalytics /></AdminLayout>} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* User Account routes */}
             <Route
@@ -100,7 +96,7 @@ const App = () => (
                 </>
               }
             />
-            
+
             {/* Public routes with NavBar and Footer */}
             <Route
               path="/"
@@ -187,17 +183,17 @@ const App = () => (
               }
             />
             <Route
-  path="/new-arrivals"
-  element={
-    <>
-      <NavBar />
-      <main>
-        <Newarrival />
-      </main>
-      <Footer />
-    </>
-  }
-/>
+              path="/new-arrivals"
+              element={
+                <>
+                  <NavBar />
+                  <main>
+                    <Newarrival />
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
             <Route
               path="/register"
               element={
@@ -210,7 +206,7 @@ const App = () => (
                 </>
               }
             />
-            
+
             {/* Catch-all route */}
             <Route
               path="*"
