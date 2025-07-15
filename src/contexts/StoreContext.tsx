@@ -228,10 +228,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         dispatch({ type: 'SET_FILTERED_PRODUCTS', payload: productsData });
         dispatch({ type: 'SET_COUPONS', payload: couponsData });
 
-        const currentUser = getItemFromStorage('currentUser');
-        if (currentUser) {
-          dispatch({ type: 'SET_USER', payload: currentUser });
-        }
+     const currentUser = getItemFromStorage('currentUser');
+if (currentUser) {
+  dispatch({ type: 'SET_USER', payload: currentUser });
+
+  // ✅ FIX: Set Authorization header globally for Axios
+  axios.defaults.headers.common['Authorization'] = `Bearer ${currentUser.token}`;
+}
+
 
         const cart = getItemFromStorage('cart') || [];
         const wishlist = getItemFromStorage('wishlist') || [];

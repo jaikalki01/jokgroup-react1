@@ -23,6 +23,19 @@ const ProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [colorImageMap, setColorImageMap] = useState<{ [color: string]: string }>({});
+  
+  // Helper function to construct proper image URLs
+const getImageUrl = (imagePath: string): string => {
+  if (!imagePath) return "/no-image.svg";
+
+  const cleaned = imagePath
+    .replace(/^\/?static\/products\/?/, "") // remove leading static/products/
+    .replace(/^products\//, "");            // remove leading products/
+
+  return `http://127.0.0.1:8000/static/products/${cleaned}`;
+};
+
+
 
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore();
 
@@ -79,6 +92,33 @@ const ProductDetailPage = () => {
           productData.images = [];
         }
 
+        // Debug image paths
+        console.log("Product images:", productData.images);
+        
+        // Add additional logging for image path debugging
+        if (productData.images && productData.images.length > 0) {
+          console.log("First image path:", productData.images[0]);
+          
+          // Normalize image paths if needed
+productData.images = productData.images.map((img) => {
+  // Step 1: Clean leading slashes
+  const cleanImg = img.replace(/^\/+/, "");
+
+  // Step 2: If already has static/products or full URL
+  if (cleanImg.startsWith("static/products") || cleanImg.startsWith("http")) {
+    return `/${cleanImg}`;
+  }
+
+  // Step 3: Add static/products/ prefix to just filenames
+  return `/static/products/${cleanImg}`;
+});
+
+
+        
+        console.log("Normalized first image path:", productData.images[0]);
+        console.log("Constructed URL:", getImageUrl(productData.images[0]));
+      }
+        
         setProduct(productData);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -170,52 +210,21 @@ const ProductDetailPage = () => {
       {/* Product Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         {/* Product Images */}
-
-<div className="space-y-4">
-  <div className="aspect-square rounded-lg overflow-hidden border">
-    <img
-      src={`http://127.0.0.1:8000/static${product.images[selectedImage]}`}
-      alt={product.name}
-      className="w-full h-full object-cover"
-    />
-  </div>
-  <div className="flex gap-2 overflow-x-auto py-2">
-    {product.images.map((image, index) => (
-      <div
-        key={index}
-        className={`cursor-pointer border rounded w-20 h-20 flex-shrink-0 ${
-          selectedImage === index ? "border-navy border-2" : "border-gray-200"
-        }`}
-        onClick={() => setSelectedImage(index)}
-      >
-        <img
-          src={`http://127.0.0.1:8000${image}`}
-          alt={`${product.name} ${index + 1}`}
-          className="w-full h-full object-cover"
-        />
-      </div>
-    ))}
-  </div>
-</div>
-
-
-
         <div className="space-y-4">
           <div className="aspect-square rounded-lg overflow-hidden border">
             {product.images.length > 0 ? (
               <img
-                src={
-                  product.images[selectedImage]?.startsWith("http")
-                    ? product.images[selectedImage]
-                    : `http://127.0.0.1:8000/${product.images[selectedImage]?.replace(/^\/+/, "")}`
-                }
+                 src={getImageUrl(product.images[selectedImage])}
                 alt={product.name}
                 className="w-full h-full object-cover"
-                onError={e => (e.currentTarget.src = "/no-image.png")}
+                onError={e => {
+                  console.error("Image failed to load:", e.currentTarget.src);
+                  e.currentTarget.src = "/no-image.svg";
+                }}
               />
             ) : (
               <img
-                src="/no-image.png"
+                src="/no-image.svg"
                 alt="No image"
                 className="w-full h-full object-cover"
               />
@@ -231,14 +240,13 @@ const ProductDetailPage = () => {
                 onClick={() => setSelectedImage(index)}
               >
                 <img
-                  src={
-                    image.startsWith("http")
-                      ? image
-                      : `http://127.0.0.1:8000/${image.replace(/^\/+/, "")}`
-                  }
+                  src={getImageUrl(image)}
                   alt={`${product.name} ${index + 1}`}
                   className="w-full h-full object-cover"
-                  onError={e => (e.currentTarget.src = "/no-image.png")}
+                  onError={e => {
+                    console.error("Thumbnail image failed to load:", e.currentTarget.src);
+                    e.currentTarget.src = "/no-image.svg";
+                  }}
                 />
               </div>
             ))}
